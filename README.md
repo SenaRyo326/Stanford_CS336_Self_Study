@@ -4,8 +4,6 @@
 
 Maintained by a Year 1 Electrical Engineering student at The Hong Kong Polytechnic University (not enrolled for credit; no Gradescope or leaderboard submissions). Implementations live in this repository, while large datasets, checkpoints, and official assignment PDFs stay local.
 
-AI is used strictly as a study aid, followed the rules in AGENTS.md in CS336, for unfamiliar methods, high-level architecture, and core ideas; all uploaded core modules are hand-written without direct AI code generation.
-
 ## Progress
 
 | Assignment | Topic | Progress |
@@ -19,3 +17,4 @@ AI is used strictly as a study aid, followed the rules in AGENTS.md in CS336, fo
 ## Log
 
 - **2026-11-16** — Implemented `bpe.py`, `linear.py`, `embedding.py`, `RMSNorm.py`, and `SwiGLU.py` (all unit tests passing). 
+- **2026-11-18** — Implemented `RoPE.py`. RoPE encodes positional information into q and k, took lots of time to understand how it works. Method `unsqueeze` starts from -1 lol.
