@@ -8,7 +8,7 @@ Maintained by a Year 1 Electrical Engineering student at The Hong Kong Polytechn
 
 | Assignment | Topic | Progress |
 | :--- | :--- | :---: |
-| Assignment 1 | Basics (Tokenizer, Transformer, Optimizer, Training) | 40% |
+| Assignment 1 | Basics (Tokenizer, Transformer, Optimizer, Training) | 60% |
 | Assignment 2 | Systems (FlashAttention-2, Distributed Training) | 0% |
 | Assignment 3 | Scaling (Scaling Laws) | 0% |
 | Assignment 4 | Data (Pretraining Data Filtering & Deduplication) | 0% |
@@ -17,4 +17,5 @@ Maintained by a Year 1 Electrical Engineering student at The Hong Kong Polytechn
 ## Log
 
 - **2026-11-16** — Implemented `bpe.py`, `linear.py`, `embedding.py`, `RMSNorm.py`, and `SwiGLU.py` (all unit tests passing). 
-- **2026-11-18** — Implemented `RoPE.py`. RoPE encodes positional information into q and k, took lots of time to understand how it works. Method `unsqueeze` starts from -1 lol.
+- **2026-11-18** — Implemented `RoPE.py`. RoPE encodes positional information into q and k, took lots of time to understand how it works. 
+- **2026-11-19** — Implemented `ScaledDotProductAttention.py`, `softmax.py`, `CausualMultiHeadSelfAttention.py`, `Transformerblock.py`, `TransformerLM.py`. Optimized `bpe_optimized` ready for later training stage.

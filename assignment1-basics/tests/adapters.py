@@ -86,7 +86,7 @@ def run_swiglu(
     return swiglu(in_features)
 
 
-
+from cs336_basics.ScaledDotProductAttention import ScaledDotProductAttention
 def run_scaled_dot_product_attention(
     Q: Float[Tensor, " ... queries d_k"],
     K: Float[Tensor, " ... keys d_k"],
@@ -105,8 +105,9 @@ def run_scaled_dot_product_attention(
     Returns:
         Float[Tensor, " ... queries d_v"]: Output of SDPA
     """
-    raise NotImplementedError
-
+    return ScaledDotProductAttention(Q,K,V,mask)
+    
+from cs336_basics.CausalMultiHeadSelfAttention import CausalMultiHeadSelfAttention
 
 def run_multihead_self_attention(
     d_model: int,
@@ -139,7 +140,19 @@ def run_multihead_self_attention(
         Float[Tensor, " ... sequence_length d_model"]: Tensor with the output of running your optimized, batched multi-headed attention
         implementation with the given QKV projection weights and input features.
     """
-    raise NotImplementedError
+    attent = CausalMultiHeadSelfAttention(
+    d_model=d_model,
+    num_heads=num_heads,
+    device=in_features.device,
+    dtype=in_features.dtype,
+)
+    attent.load_state_dict({
+    "q_proj.weight": q_proj_weight,
+    "k_proj.weight": k_proj_weight,
+    "v_proj.weight": v_proj_weight,
+    "o_proj.weight": o_proj_weight,
+})
+    return attent(in_features)
 
 
 def run_multihead_self_attention_with_rope(
@@ -179,7 +192,21 @@ def run_multihead_self_attention_with_rope(
         Float[Tensor, " ... sequence_length d_model"]: Tensor with the output of running your optimized, batched multi-headed attention
         implementation with the given QKV projection weights and input features.
     """
-    raise NotImplementedError
+    attent = CausalMultiHeadSelfAttention(
+        d_model=d_model,
+        num_heads=num_heads,
+        max_seq_len=max_seq_len,
+        theta=theta,
+        device=in_features.device,
+        dtype=in_features.dtype,
+    )
+    attent.load_state_dict({
+        "q_proj.weight": q_proj_weight,
+        "k_proj.weight": k_proj_weight,
+        "v_proj.weight": v_proj_weight,
+        "o_proj.weight": o_proj_weight,
+    })
+    return attent(in_features, token_positions)
 
 from cs336_basics.RoPE import RotaryPositionalEmbedding
 def run_rope(
@@ -197,7 +224,7 @@ def run_rope(
     )
     return rope(in_query_or_key, token_positions)
 
-
+from cs336_basics.TransformerBlock import Transformer
 def run_transformer_block(
     d_model: int,
     num_heads: int,
@@ -268,9 +295,29 @@ def run_transformer_block(
         Float[Tensor, "batch sequence_length d_model"] Tensor with the output of
         running the Transformer block on the input features while using RoPE.
     """
-    raise NotImplementedError
+    block = Transformer(
+        d_model=d_model,
+        num_heads=num_heads,
+        d_ff=d_ff,
+        max_seq_len=max_seq_len,
+        theta=theta,
+        device=in_features.device,
+        dtype=in_features.dtype,
+    )
+    block.load_state_dict({
+        "Norm1.weight": weights["ln1.weight"],
+        "Norm2.weight": weights["ln2.weight"],
+        "Attention.q_proj.weight": weights["attn.q_proj.weight"],
+        "Attention.k_proj.weight": weights["attn.k_proj.weight"],
+        "Attention.v_proj.weight": weights["attn.v_proj.weight"],
+        "Attention.o_proj.weight": weights["attn.output_proj.weight"],
+        "FFN.w1.weight": weights["ffn.w1.weight"],
+        "FFN.w2.weight": weights["ffn.w2.weight"],
+        "FFN.w3.weight": weights["ffn.w3.weight"],
+    })
+    return block(in_features)
 
-
+from cs336_basics.TransformerLM import TransformerLM
 def run_transformer_lm(
     vocab_size: int,
     context_length: int,
@@ -350,7 +397,36 @@ def run_transformer_lm(
         Float[Tensor, "batch_size sequence_length vocab_size"]: Tensor with the predicted unnormalized
         next-word distribution for each token.
     """
-    raise NotImplementedError
+    model = TransformerLM(
+        d_model=d_model,
+        num_heads=num_heads,
+        d_ff=d_ff,
+        max_seq_len=context_length,
+        theta=rope_theta,
+        vocab_size=vocab_size,
+        num_layers=num_layers,
+        device=in_indices.device,
+        dtype=weights["token_embeddings.weight"].dtype,
+    )
+    state_dict = {
+        "Embed.weight": weights["token_embeddings.weight"],
+        "Norm.weight": weights["ln_final.weight"],
+        "Out.weight": weights["lm_head.weight"],
+    }
+    for i in range(num_layers):
+        state_dict.update({
+            f"Transformer.{i}.Norm1.weight": weights[f"layers.{i}.ln1.weight"],
+            f"Transformer.{i}.Norm2.weight": weights[f"layers.{i}.ln2.weight"],
+            f"Transformer.{i}.Attention.q_proj.weight": weights[f"layers.{i}.attn.q_proj.weight"],
+            f"Transformer.{i}.Attention.k_proj.weight": weights[f"layers.{i}.attn.k_proj.weight"],
+            f"Transformer.{i}.Attention.v_proj.weight": weights[f"layers.{i}.attn.v_proj.weight"],
+            f"Transformer.{i}.Attention.o_proj.weight": weights[f"layers.{i}.attn.output_proj.weight"],
+            f"Transformer.{i}.FFN.w1.weight": weights[f"layers.{i}.ffn.w1.weight"],
+            f"Transformer.{i}.FFN.w2.weight": weights[f"layers.{i}.ffn.w2.weight"],
+            f"Transformer.{i}.FFN.w3.weight": weights[f"layers.{i}.ffn.w3.weight"],
+        })
+    model.load_state_dict(state_dict)
+    return model(in_indices)
 
 from cs336_basics.RMSNorm import RMSNorm
 
@@ -403,7 +479,7 @@ def run_get_batch(
     """
     raise NotImplementedError
 
-
+from cs336_basics.softmax import softmax
 def run_softmax(in_features: Float[Tensor, " ..."], dim: int) -> Float[Tensor, " ..."]:
     """
     Given a tensor of inputs, return the output of softmaxing the given `dim`
@@ -417,7 +493,7 @@ def run_softmax(in_features: Float[Tensor, " ..."], dim: int) -> Float[Tensor, "
         Float[Tensor, "..."]: Tensor of with the same shape as `in_features` with the output of
         softmax normalizing the specified `dim`.
     """
-    raise NotImplementedError
+    return softmax(in_features , dim)
 
 
 def run_cross_entropy(
@@ -524,7 +600,7 @@ def run_load_checkpoint(
     """
     raise NotImplementedError
 
-
+from cs336_basics.bpe_optimized import bpe_train, Tokenizer
 def get_tokenizer(
     vocab: dict[int, bytes],
     merges: list[tuple[bytes, bytes]],
@@ -545,9 +621,8 @@ def get_tokenizer(
     Returns:
         A BPE tokenizer that uses the provided vocab, merges, and special tokens.
     """
-    raise NotImplementedError
+    return Tokenizer(vocab=vocab, merges=merges, special_tokens=special_tokens)
 
-from cs336_basics.bpe import bpe_train
 def run_train_bpe(
     input_path: str | os.PathLike,
     vocab_size: int,
@@ -575,4 +650,4 @@ def run_train_bpe(
                 representing that <token1> was merged with <token2>.
                 Merges are ordered by order of creation.
     """
-    return train_bpe(input_path, vocab_size, special_tokens)
+    return bpe_train(input_path, vocab_size, special_tokens)
