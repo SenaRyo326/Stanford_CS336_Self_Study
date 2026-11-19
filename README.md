@@ -8,7 +8,7 @@ Maintained by a Year 1 Electrical Engineering student at The Hong Kong Polytechn
 
 | Assignment | Topic | Progress |
 | :--- | :--- | :---: |
-| Assignment 1 | Basics (Tokenizer, Transformer, Optimizer, Training) | 60% |
+| Assignment 1 | Basics (Tokenizer, Transformer, Optimizer, Training) | 75% |
 | Assignment 2 | Systems (FlashAttention-2, Distributed Training) | 0% |
 | Assignment 3 | Scaling (Scaling Laws) | 0% |
 | Assignment 4 | Data (Pretraining Data Filtering & Deduplication) | 0% |
